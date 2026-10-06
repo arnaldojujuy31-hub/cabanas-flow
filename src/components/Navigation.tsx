@@ -5,12 +5,11 @@ import { usePathname } from "next/navigation";
 import {
   CalendarDays,
   CalendarCheck,
-  Home,
-  Plus,
   Receipt,
   PieChart,
+  Home,
   Sparkles,
-  Users,
+  Plus,
   Mountain,
   Layers,
   ChevronRight,
@@ -24,7 +23,8 @@ interface NavigationProps {
 export function Navigation({ onOpenNewReserva }: NavigationProps) {
   const pathname = usePathname();
 
-  const navItems = [
+  // LISTA COMPLETA PARA DESKTOP SIDEBAR
+  const desktopNavItems = [
     {
       name: "Ocupación",
       href: "/",
@@ -36,14 +36,14 @@ export function Navigation({ onOpenNewReserva }: NavigationProps) {
       icon: CalendarCheck,
     },
     {
-      name: "Consolidado",
-      href: "/consolidado",
-      icon: PieChart,
-    },
-    {
       name: "Gastos",
       href: "/gastos",
       icon: Receipt,
+    },
+    {
+      name: "Consolidado",
+      href: "/consolidado",
+      icon: PieChart,
     },
     {
       name: "Cabañas",
@@ -55,16 +55,11 @@ export function Navigation({ onOpenNewReserva }: NavigationProps) {
       href: "/limpieza",
       icon: Sparkles,
     },
-    {
-      name: "Huéspedes",
-      href: "/huespedes",
-      icon: Users,
-    },
   ];
 
   return (
     <>
-      {/* DESKTOP & TABLET SIDEBAR */}
+      {/* 1. DESKTOP & TABLET SIDEBAR */}
       <aside className="hidden md:flex flex-col w-64 bg-stone-900 text-stone-100 border-r border-stone-800 shrink-0 h-screen sticky top-0 z-30">
         {/* Brand Header */}
         <div className="p-5 border-b border-stone-800/80 flex items-center gap-3">
@@ -102,7 +97,7 @@ export function Navigation({ onOpenNewReserva }: NavigationProps) {
 
         {/* Navigation Links */}
         <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
+          {desktopNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
 
@@ -113,7 +108,7 @@ export function Navigation({ onOpenNewReserva }: NavigationProps) {
                 className={cn(
                   "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group",
                   isActive
-                    ? "bg-amber-600/20 text-amber-400 border border-amber-500/30"
+                    ? "bg-amber-600/20 text-amber-400 border border-amber-500/30 font-semibold"
                     : "text-stone-300 hover:bg-stone-800/80 hover:text-white"
                 )}
               >
@@ -151,14 +146,14 @@ export function Navigation({ onOpenNewReserva }: NavigationProps) {
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAVIGATION BAR */}
+      {/* 2. MOBILE BOTTOM NAVIGATION BAR (5 POSICIONES EXACTAS) */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-stone-900/95 backdrop-blur-lg border-t border-stone-800/90 pb-safe">
         <div className="flex items-center justify-around px-2 py-1.5 relative">
-          {/* Ocupación */}
+          {/* Posición 1: Ocupación */}
           <Link
             href="/"
             className={cn(
-              "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[11px] font-medium transition-all",
+              "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[11px] font-medium transition-all min-w-[58px]",
               pathname === "/"
                 ? "text-amber-400 font-semibold"
                 : "text-stone-400 hover:text-stone-200"
@@ -170,50 +165,11 @@ export function Navigation({ onOpenNewReserva }: NavigationProps) {
             <span>Ocupación</span>
           </Link>
 
-          {/* Cabañas */}
-          <Link
-            href="/cabanias"
-            className={cn(
-              "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[11px] font-medium transition-all",
-              pathname === "/cabanias"
-                ? "text-amber-400 font-semibold"
-                : "text-stone-400 hover:text-stone-200"
-            )}
-          >
-            <Home
-              className={cn(
-                "w-5 h-5 mb-0.5",
-                pathname === "/cabanias" && "scale-110"
-              )}
-            />
-            <span>Cabañas</span>
-          </Link>
-
-          {/* Central (+) Action Floating Button */}
-          <div className="-mt-6 flex flex-col items-center">
-            <button
-              onClick={() => {
-                if (onOpenNewReserva) {
-                  onOpenNewReserva();
-                } else {
-                  window.dispatchEvent(new CustomEvent("open-new-reserva"));
-                }
-              }}
-              aria-label="Nueva Reserva"
-              className="w-13 h-13 rounded-full bg-gradient-to-tr from-orange-600 via-amber-600 to-amber-500 text-white flex items-center justify-center shadow-lg shadow-orange-600/40 border-4 border-stone-900 active:scale-95 transition-transform"
-            >
-              <Plus className="w-7 h-7 stroke-[2.5]" />
-            </button>
-            <span className="text-[10px] font-medium text-amber-300/90 mt-0.5">
-              + Reserva
-            </span>
-          </div>
-
-          {/* Gastos */}
+          {/* Posición 2: Gastos */}
           <Link
             href="/gastos"
             className={cn(
-              "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[11px] font-medium transition-all",
+              "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[11px] font-medium transition-all min-w-[58px]",
               pathname === "/gastos"
                 ? "text-amber-400 font-semibold"
                 : "text-stone-400 hover:text-stone-200"
@@ -228,11 +184,50 @@ export function Navigation({ onOpenNewReserva }: NavigationProps) {
             <span>Gastos</span>
           </Link>
 
-          {/* Limpieza */}
+          {/* Posición 3 (CENTRO): Botón Flotante Nueva Reserva */}
+          <div className="-mt-6 flex flex-col items-center">
+            <button
+              onClick={() => {
+                if (onOpenNewReserva) {
+                  onOpenNewReserva();
+                } else {
+                  window.dispatchEvent(new CustomEvent("open-new-reserva"));
+                }
+              }}
+              aria-label="Nueva Reserva"
+              className="w-13 h-13 rounded-full bg-gradient-to-tr from-orange-600 via-amber-600 to-amber-500 text-white flex items-center justify-center shadow-lg shadow-orange-600/40 border-4 border-stone-900 active:scale-95 transition-transform cursor-pointer"
+            >
+              <Plus className="w-7 h-7 stroke-[2.5]" />
+            </button>
+            <span className="text-[10px] font-medium text-amber-300/90 mt-0.5">
+              + Reserva
+            </span>
+          </div>
+
+          {/* Posición 4: Consolidado */}
+          <Link
+            href="/consolidado"
+            className={cn(
+              "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[11px] font-medium transition-all min-w-[58px]",
+              pathname === "/consolidado"
+                ? "text-amber-400 font-semibold"
+                : "text-stone-400 hover:text-stone-200"
+            )}
+          >
+            <PieChart
+              className={cn(
+                "w-5 h-5 mb-0.5",
+                pathname === "/consolidado" && "scale-110"
+              )}
+            />
+            <span>Consolidado</span>
+          </Link>
+
+          {/* Posición 5: Limpieza */}
           <Link
             href="/limpieza"
             className={cn(
-              "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[11px] font-medium transition-all",
+              "flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[11px] font-medium transition-all min-w-[58px]",
               pathname === "/limpieza"
                 ? "text-amber-400 font-semibold"
                 : "text-stone-400 hover:text-stone-200"
