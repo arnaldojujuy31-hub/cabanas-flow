@@ -38,76 +38,6 @@ import { createClient } from "@/lib/supabase/client";
 import { NewGastoModal } from "@/components/NewGastoModal";
 import { formatCurrency, cn } from "@/lib/utils";
 
-// Mock representativo inicial para el complejo en Purmamarca
-const MOCK_GASTOS: Gasto[] = [
-  {
-    id: "g-001",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    fecha: "2026-10-02",
-    categoria: "Servicios",
-    detalle: "Pago de luz EJESA (Medidor Cabañas)",
-    monto: 48500,
-    moneda: "ARS",
-    abonado_por: "Claudio",
-    medio_pago: "transferencia",
-  },
-  {
-    id: "g-002",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    fecha: "2026-10-04",
-    categoria: "Viáticos Purma",
-    detalle: "Combustible viaje supervisión Jujuy - Purmamarca",
-    monto: 32000,
-    moneda: "ARS",
-    abonado_por: "Ale",
-    medio_pago: "tarjeta",
-  },
-  {
-    id: "g-003",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    fecha: "2026-10-05",
-    categoria: "Limpieza",
-    detalle: "Servicio de lavandería de blancos y toallas (Lote 1)",
-    monto: 26000,
-    moneda: "ARS",
-    abonado_por: "Caja Central",
-    medio_pago: "efectivo",
-  },
-  {
-    id: "g-004",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    fecha: "2026-10-08",
-    categoria: "Insumos",
-    detalle: "Compra de amenities, café, té y artículos de tocador",
-    monto: 38400,
-    moneda: "ARS",
-    abonado_por: "Claudio",
-    medio_pago: "transferencia",
-  },
-  {
-    id: "g-005",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    fecha: "2026-10-10",
-    categoria: "Mantenimiento",
-    detalle: "Reparación bomba de agua y presurizadora Cabaña 2",
-    monto: 45000,
-    moneda: "ARS",
-    abonado_por: "Ale",
-    medio_pago: "transferencia",
-  },
-  {
-    id: "g-006",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    fecha: "2026-10-12",
-    categoria: "Servicios",
-    detalle: "Internet Fibra Óptica Purmamarca + Netflix cabañas",
-    monto: 24000,
-    moneda: "ARS",
-    abonado_por: "Caja Central",
-    medio_pago: "transferencia",
-  },
-];
-
 export default function GastosPage() {
   const [currentMonth, setCurrentMonth] = useState<Date>(() => new Date(2026, 9, 1));
   const [gastos, setGastos] = useState<Gasto[]>([]);
@@ -142,15 +72,14 @@ export default function GastosPage() {
         .lte("fecha", endStr)
         .order("fecha", { ascending: false });
 
-      if (data && data.length > 0) {
+      if (data) {
         setGastos(data);
       } else {
-        // Si no hay datos en BD aún en el mes actual, mostramos mock inicial
-        setGastos(MOCK_GASTOS);
+        setGastos([]);
       }
     } catch (err) {
       console.error("Error al cargar gastos:", err);
-      setGastos(MOCK_GASTOS);
+      setGastos([]);
     } finally {
       setLoading(false);
     }

@@ -140,7 +140,7 @@ export function Navigation({ onOpenNewReserva }: NavigationProps) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-stone-200 truncate">
-                Complejo Los Cardones
+                Cabañas Purmamarca
               </p>
               <p className="text-[10px] text-stone-400 truncate">
                 6 cabañas activas

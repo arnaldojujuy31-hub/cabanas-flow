@@ -40,14 +40,14 @@ import { ReservaDetailModal } from "@/components/ReservaDetailModal";
 import { NewReservaModal } from "@/components/NewReservaModal";
 import { formatCurrency } from "@/lib/utils";
 
-// Mock inicial de fallback para las 6 cabañas de Purmamarca
-const MOCK_CABANIAS: Cabania[] = [
+// 6 Cabañas Reales de Cabañas Purmamarca
+const REAL_CABANIAS_FALLBACK: Cabania[] = [
   {
     id: "c0000000-0000-0000-0000-000000000001",
     complejo_id: COMPLEJO_PILOTO_ID,
-    nombre: "Cabaña Los Cardones",
-    tipo: "Premium 2 Ambientes",
-    capacidad_maxima: 4,
+    nombre: "Cabaña Doble 1",
+    tipo: "Doble Matrimonial / Twin",
+    capacidad_maxima: 2,
     estado_limpieza: "limpia",
     orden_en_grilla: 1,
     activo: true,
@@ -55,9 +55,9 @@ const MOCK_CABANIAS: Cabania[] = [
   {
     id: "c0000000-0000-0000-0000-000000000002",
     complejo_id: COMPLEJO_PILOTO_ID,
-    nombre: "Cabaña Cerro Morado",
-    tipo: "Familiar con Asador",
-    capacidad_maxima: 6,
+    nombre: "Cabaña Doble 2",
+    tipo: "Doble Matrimonial / Twin",
+    capacidad_maxima: 2,
     estado_limpieza: "limpia",
     orden_en_grilla: 2,
     activo: true,
@@ -65,19 +65,19 @@ const MOCK_CABANIAS: Cabania[] = [
   {
     id: "c0000000-0000-0000-0000-000000000003",
     complejo_id: COMPLEJO_PILOTO_ID,
-    nombre: "Cabaña Siete Colores",
-    tipo: "Matrimonial Deluxe",
-    capacidad_maxima: 2,
-    estado_limpieza: "en_limpieza",
+    nombre: "Cabaña Cuádruple 3 c/ Terraza",
+    tipo: "Cuádruple con Terraza",
+    capacidad_maxima: 4,
+    estado_limpieza: "limpia",
     orden_en_grilla: 3,
     activo: true,
   },
   {
     id: "c0000000-0000-0000-0000-000000000004",
     complejo_id: COMPLEJO_PILOTO_ID,
-    nombre: "Cabaña Algarrobo",
-    tipo: "Estándar 2 Ambientes",
-    capacidad_maxima: 4,
+    nombre: "Cabaña Doble 4 c/ Terraza",
+    tipo: "Doble con Terraza",
+    capacidad_maxima: 2,
     estado_limpieza: "limpia",
     orden_en_grilla: 4,
     activo: true,
@@ -85,19 +85,19 @@ const MOCK_CABANIAS: Cabania[] = [
   {
     id: "c0000000-0000-0000-0000-000000000005",
     complejo_id: COMPLEJO_PILOTO_ID,
-    nombre: "Cabaña El Molino",
-    tipo: "Monoambiente Rústico",
-    capacidad_maxima: 2,
-    estado_limpieza: "sucia",
+    nombre: "Cabaña Cuádruple 5",
+    tipo: "Cuádruple Familiar",
+    capacidad_maxima: 4,
+    estado_limpieza: "limpia",
     orden_en_grilla: 5,
     activo: true,
   },
   {
     id: "c0000000-0000-0000-0000-000000000006",
     complejo_id: COMPLEJO_PILOTO_ID,
-    nombre: "Cabaña Pucará",
-    tipo: "Familiar Superior",
-    capacidad_maxima: 5,
+    nombre: "Cabaña Cuádruple 6",
+    tipo: "Cuádruple Familiar",
+    capacidad_maxima: 4,
     estado_limpieza: "limpia",
     orden_en_grilla: 6,
     activo: true,
@@ -107,7 +107,7 @@ const MOCK_CABANIAS: Cabania[] = [
 export default function OcupacionPage() {
   const [currentMonth, setCurrentMonth] = useState<Date>(() => new Date(2026, 9, 1));
   const [today, setToday] = useState<Date>(() => new Date(2026, 9, 1));
-  const [cabanias, setCabanias] = useState<Cabania[]>(MOCK_CABANIAS);
+  const [cabanias, setCabanias] = useState<Cabania[]>(REAL_CABANIAS_FALLBACK);
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -133,7 +133,7 @@ export default function OcupacionPage() {
     try {
       const supabase = createClient();
 
-      // 1. Obtener Cabañas
+      // 1. Obtener Cabañas reales del complejo
       const { data: cabaniasData, error: cabaniasError } = await supabase
         .from("cabanias")
         .select("*")
@@ -143,34 +143,46 @@ export default function OcupacionPage() {
       if (cabaniasData && cabaniasData.length > 0) {
         setCabanias(cabaniasData);
       } else {
-        setCabanias(MOCK_CABANIAS);
+        setCabanias(REAL_CABANIAS_FALLBACK);
       }
 
       // 2. Rango de fechas para el mes seleccionado
       const startStr = format(startOfMonth(currentMonth), "yyyy-MM-dd");
       const endStr = format(endOfMonth(currentMonth), "yyyy-MM-dd");
 
-      // 3. Obtener Reservas con Huéspedes y Pagos
-      const { data: reservasData, error: reservasError } = await supabase
+      // 3. Obtener Reservas con Huéspedes y Pagos reales
+      let { data: reservasData, error: reservasError } = await supabase
         .from("reservas")
         .select(
           `
           *,
           huesped:huespedes(*),
           cabania:cabanias(*),
-          pagos:pagos_reservas(*)
+          pagos:pagos_reserva(*)
         `
         )
         .eq("complejo_id", COMPLEJO_PILOTO_ID)
         .or(`fecha_checkin.lte.${endStr},fecha_checkout.gte.${startStr}`);
 
-      if (reservasData && reservasData.length > 0) {
-        setReservas(reservasData as unknown as Reserva[]);
-      } else if (reservasError) {
-        console.warn("Supabase query info:", reservasError.message);
+      if (reservasError && reservasError.code === "42P01") {
+        const res2 = await supabase
+          .from("reservas")
+          .select(
+            `
+            *,
+            huesped:huespedes(*),
+            cabania:cabanias(*),
+            pagos:pagos_reservas(*)
+          `
+          )
+          .eq("complejo_id", COMPLEJO_PILOTO_ID)
+          .or(`fecha_checkin.lte.${endStr},fecha_checkout.gte.${startStr}`);
+        reservasData = res2.data;
       }
+      setReservas((reservasData as unknown as Reserva[]) || []);
     } catch (err) {
       console.error("Error al cargar datos de ocupación:", err);
+      setReservas([]);
     } finally {
       setLoading(false);
     }

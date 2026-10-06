@@ -34,151 +34,6 @@ import { formatCurrency, cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 
-// Mock representativo para la lista de reservas
-const MOCK_RESERVAS: Reserva[] = [
-  {
-    id: "r-001",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    cabania_id: "c0000000-0000-0000-0000-000000000001",
-    huesped_id: "h-001",
-    fecha_checkin: "2026-10-06",
-    fecha_checkout: "2026-10-09",
-    cantidad_noches: 3,
-    cantidad_pasajeros: 4,
-    origen_reserva: "whatsapp",
-    estado: "checkin",
-    monto_total: 255000,
-    moneda: "ARS",
-    notas_operativas: "Llegó al mediodía. Abonó 50% de seña por transferencia.",
-    huesped: {
-      id: "h-001",
-      complejo_id: COMPLEJO_PILOTO_ID,
-      nombre_completo: "Martín González",
-      dni_o_pasaporte: "32.456.789",
-      telefono_whatsapp: "+54 9 11 4455-6677",
-      email: "martin.gonzalez@gmail.com",
-      ciudad_origen: "Buenos Aires",
-    },
-    cabania: {
-      id: "c0000000-0000-0000-0000-000000000001",
-      complejo_id: COMPLEJO_PILOTO_ID,
-      nombre: "Cabaña Los Cardones",
-      tipo: "Premium 2 Ambientes",
-      capacidad_maxima: 4,
-      estado_limpieza: "limpia",
-      orden_en_grilla: 1,
-      activo: true,
-    },
-    pagos: [
-      {
-        id: "p-001",
-        complejo_id: COMPLEJO_PILOTO_ID,
-        reserva_id: "r-001",
-        fecha_cobro: "2026-09-20",
-        tipo_pago: "seña",
-        medio_pago: "transferencia",
-        monto: 127500,
-        moneda: "ARS",
-        recibido_por: "Claudio",
-      },
-    ],
-  },
-  {
-    id: "r-002",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    cabania_id: "c0000000-0000-0000-0000-000000000003",
-    huesped_id: "h-002",
-    fecha_checkin: "2026-10-08",
-    fecha_checkout: "2026-10-12",
-    cantidad_noches: 4,
-    cantidad_pasajeros: 2,
-    origen_reserva: "booking",
-    estado: "confirmada",
-    monto_total: 340000,
-    moneda: "ARS",
-    notas_operativas: "Pareja de luna de miel. Requieren late check-out si es posible.",
-    huesped: {
-      id: "h-002",
-      complejo_id: COMPLEJO_PILOTO_ID,
-      nombre_completo: "Valeria Rossi & Santiago",
-      dni_o_pasaporte: "38.900.112",
-      telefono_whatsapp: "+54 9 351 234-5678",
-      email: "valeria.rossi@hotmail.com",
-      ciudad_origen: "Córdoba Capital",
-    },
-    cabania: {
-      id: "c0000000-0000-0000-0000-000000000003",
-      complejo_id: COMPLEJO_PILOTO_ID,
-      nombre: "Cabaña Siete Colores",
-      tipo: "Matrimonial Deluxe",
-      capacidad_maxima: 2,
-      estado_limpieza: "en_limpieza",
-      orden_en_grilla: 3,
-      activo: true,
-    },
-    pagos: [
-      {
-        id: "p-002",
-        complejo_id: COMPLEJO_PILOTO_ID,
-        reserva_id: "r-002",
-        fecha_cobro: "2026-09-28",
-        tipo_pago: "total",
-        medio_pago: "tarjeta",
-        monto: 340000,
-        moneda: "ARS",
-        recibido_por: "Ale",
-      },
-    ],
-  },
-  {
-    id: "r-003",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    cabania_id: "c0000000-0000-0000-0000-000000000002",
-    huesped_id: "h-003",
-    fecha_checkin: "2026-10-14",
-    fecha_checkout: "2026-10-18",
-    cantidad_noches: 4,
-    cantidad_pasajeros: 6,
-    origen_reserva: "directo",
-    estado: "confirmada",
-    monto_total: 420000,
-    moneda: "ARS",
-    notas_operativas: "Familia con niños. Vienen en 2 vehículos.",
-    huesped: {
-      id: "h-003",
-      complejo_id: COMPLEJO_PILOTO_ID,
-      nombre_completo: "Carlos Benítez",
-      dni_o_pasaporte: "28.112.445",
-      telefono_whatsapp: "+54 9 387 600-9988",
-      email: "carlos.benitez@yahoo.com.ar",
-      ciudad_origen: "Salta",
-    },
-    cabania: {
-      id: "c0000000-0000-0000-0000-000000000002",
-      complejo_id: COMPLEJO_PILOTO_ID,
-      nombre: "Cabaña Cerro Morado",
-      tipo: "Familiar con Asador",
-      capacidad_maxima: 6,
-      estado_limpieza: "limpia",
-      orden_en_grilla: 2,
-      activo: true,
-    },
-    pagos: [
-      {
-        id: "p-003",
-        complejo_id: COMPLEJO_PILOTO_ID,
-        reserva_id: "r-003",
-        fecha_cobro: "2026-10-01",
-        tipo_pago: "seña",
-        medio_pago: "transferencia",
-        monto: 150000,
-        moneda: "ARS",
-        recibido_por: "Claudio",
-      },
-    ],
-  },
-];
-
 type TabFiltro = "todas" | "pendientes" | "proximos" | "en_estadia";
 
 export default function ReservasPage() {
@@ -215,7 +70,7 @@ export default function ReservasPage() {
         setCabanias(cabData);
       }
 
-      // Reservas
+      // Reservas reales de Supabase
       let { data: resData, error } = await supabase
         .from("reservas")
         .select(
@@ -230,7 +85,6 @@ export default function ReservasPage() {
         .order("fecha_checkin", { ascending: false });
 
       if (error && error.code === "42P01") {
-        // Fallback pagos_reservas
         const res2 = await supabase
           .from("reservas")
           .select(
@@ -246,14 +100,10 @@ export default function ReservasPage() {
         resData = res2.data;
       }
 
-      if (resData && resData.length > 0) {
-        setReservas(resData as unknown as Reserva[]);
-      } else {
-        setReservas(MOCK_RESERVAS);
-      }
+      setReservas((resData as unknown as Reserva[]) || []);
     } catch (err) {
       console.error("Error al cargar reservas:", err);
-      setReservas(MOCK_RESERVAS);
+      setReservas([]);
     } finally {
       setLoading(false);
     }

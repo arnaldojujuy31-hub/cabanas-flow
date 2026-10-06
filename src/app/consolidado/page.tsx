@@ -42,138 +42,6 @@ import { createClient } from "@/lib/supabase/client";
 import { NewArqueoModal } from "@/components/NewArqueoModal";
 import { formatCurrency, cn } from "@/lib/utils";
 
-// Mock representativo para consolidado mensual
-const MOCK_PAGOS: PagoReserva[] = [
-  {
-    id: "p-01",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    reserva_id: "r-01",
-    fecha_cobro: "2026-10-02",
-    tipo_pago: "seña",
-    medio_pago: "transferencia",
-    monto: 127500,
-    moneda: "ARS",
-    recibido_por: "Claudio",
-  },
-  {
-    id: "p-02",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    reserva_id: "r-02",
-    fecha_cobro: "2026-10-05",
-    tipo_pago: "total",
-    medio_pago: "tarjeta",
-    monto: 340000,
-    moneda: "ARS",
-    recibido_por: "Ale",
-  },
-  {
-    id: "p-03",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    reserva_id: "r-03",
-    fecha_cobro: "2026-10-07",
-    tipo_pago: "seña",
-    medio_pago: "transferencia",
-    monto: 150000,
-    moneda: "ARS",
-    recibido_por: "Claudio",
-  },
-  {
-    id: "p-04",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    reserva_id: "r-04",
-    fecha_cobro: "2026-10-09",
-    tipo_pago: "saldo",
-    medio_pago: "efectivo",
-    monto: 127500,
-    moneda: "ARS",
-    recibido_por: "Recepción",
-  },
-  {
-    id: "p-05",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    reserva_id: "r-05",
-    fecha_cobro: "2026-10-12",
-    tipo_pago: "total",
-    medio_pago: "transferencia",
-    monto: 210000,
-    moneda: "ARS",
-    recibido_por: "Ale",
-  },
-];
-
-const MOCK_GASTOS: Gasto[] = [
-  {
-    id: "g-01",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    fecha: "2026-10-02",
-    categoria: "Servicios",
-    detalle: "Pago de luz EJESA Cabañas",
-    monto: 48500,
-    moneda: "ARS",
-    abonado_por: "Claudio",
-  },
-  {
-    id: "g-02",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    fecha: "2026-10-04",
-    categoria: "Viáticos Purma",
-    detalle: "Combustible viaje supervisión",
-    monto: 32000,
-    moneda: "ARS",
-    abonado_por: "Ale",
-  },
-  {
-    id: "g-03",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    fecha: "2026-10-05",
-    categoria: "Limpieza",
-    detalle: "Servicio lavandería sábanas y toallas",
-    monto: 26000,
-    moneda: "ARS",
-    abonado_por: "Caja Central",
-  },
-  {
-    id: "g-04",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    fecha: "2026-10-08",
-    categoria: "Insumos",
-    detalle: "Artículos de desayuno y amenities",
-    monto: 38400,
-    moneda: "ARS",
-    abonado_por: "Claudio",
-  },
-  {
-    id: "g-05",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    fecha: "2026-10-10",
-    categoria: "Mantenimiento",
-    detalle: "Reparación bomba presurizadora",
-    monto: 45000,
-    moneda: "ARS",
-    abonado_por: "Ale",
-  },
-  {
-    id: "g-06",
-    complejo_id: COMPLEJO_PILOTO_ID,
-    fecha: "2026-10-12",
-    categoria: "Servicios",
-    detalle: "Internet Fibra Óptica Purma + Netflix",
-    monto: 24000,
-    moneda: "ARS",
-    abonado_por: "Caja Central",
-  },
-];
-
-const MOCK_ARQUEO: ArqueoCaja = {
-  id: "arq-01",
-  complejo_id: COMPLEJO_PILOTO_ID,
-  fecha: "2026-10-06",
-  monto_ars: 185000,
-  monto_usd: 650,
-  responsable: "Recepción",
-  observaciones: "Caja de cambio operativa y depósito de cobros en efectivo",
-};
-
 export default function ConsolidadoPage() {
   const [currentMonth, setCurrentMonth] = useState<Date>(() => new Date(2026, 9, 1));
   const [pagos, setPagos] = useState<PagoReserva[]>([]);
@@ -196,7 +64,7 @@ export default function ConsolidadoPage() {
       const startStr = format(startOfMonth(currentMonth), "yyyy-MM-dd");
       const endStr = format(endOfMonth(currentMonth), "yyyy-MM-dd");
 
-      // 1. Pagos del mes
+      // 1. Pagos del mes reales
       let { data: pagosData, error: pagosErr } = await supabase
         .from("pagos_reserva")
         .select("*")
@@ -214,13 +82,9 @@ export default function ConsolidadoPage() {
         pagosData = res2.data;
       }
 
-      if (pagosData && pagosData.length > 0) {
-        setPagos(pagosData);
-      } else {
-        setPagos(MOCK_PAGOS);
-      }
+      setPagos(pagosData || []);
 
-      // 2. Gastos del mes
+      // 2. Gastos del mes reales
       const { data: gastosData } = await supabase
         .from("gastos")
         .select("*")
@@ -228,11 +92,7 @@ export default function ConsolidadoPage() {
         .gte("fecha", startStr)
         .lte("fecha", endStr);
 
-      if (gastosData && gastosData.length > 0) {
-        setGastos(gastosData);
-      } else {
-        setGastos(MOCK_GASTOS);
-      }
+      setGastos(gastosData || []);
 
       // 3. Reservas del mes (para cálculo de ocupación)
       const { data: reservasData } = await supabase
@@ -241,29 +101,22 @@ export default function ConsolidadoPage() {
         .eq("complejo_id", COMPLEJO_PILOTO_ID)
         .or(`fecha_checkin.lte.${endStr},fecha_checkout.gte.${startStr}`);
 
-      if (reservasData && reservasData.length > 0) {
-        setReservas(reservasData);
-      } else {
-        setReservas([]);
-      }
+      setReservas(reservasData || []);
 
-      // 4. Arqueos de caja
+      // 4. Arqueos de caja reales
       const { data: arqueosData } = await supabase
         .from("arqueos_caja")
         .select("*")
         .eq("complejo_id", COMPLEJO_PILOTO_ID)
         .order("fecha", { ascending: false });
 
-      if (arqueosData && arqueosData.length > 0) {
-        setArqueos(arqueosData);
-      } else {
-        setArqueos([MOCK_ARQUEO]);
-      }
+      setArqueos(arqueosData || []);
     } catch (err) {
       console.error("Error al cargar consolidado:", err);
-      setPagos(MOCK_PAGOS);
-      setGastos(MOCK_GASTOS);
-      setArqueos([MOCK_ARQUEO]);
+      setPagos([]);
+      setGastos([]);
+      setReservas([]);
+      setArqueos([]);
     } finally {
       setLoading(false);
     }

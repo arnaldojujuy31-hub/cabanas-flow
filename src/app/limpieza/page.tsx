@@ -31,14 +31,14 @@ import { NewNovedadModal } from "@/components/NewNovedadModal";
 import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 
-// Mock representativo para las 6 cabañas
-const MOCK_CABANIAS: Cabania[] = [
+// 6 Cabañas Reales de Cabañas Purmamarca
+const REAL_CABANIAS_FALLBACK: Cabania[] = [
   {
     id: "c0000000-0000-0000-0000-000000000001",
     complejo_id: COMPLEJO_PILOTO_ID,
-    nombre: "Cabaña Los Cardones",
-    tipo: "Premium 2 Ambientes",
-    capacidad_maxima: 4,
+    nombre: "Cabaña Doble 1",
+    tipo: "Doble Matrimonial / Twin",
+    capacidad_maxima: 2,
     estado_limpieza: "limpia",
     orden_en_grilla: 1,
     activo: true,
@@ -46,29 +46,29 @@ const MOCK_CABANIAS: Cabania[] = [
   {
     id: "c0000000-0000-0000-0000-000000000002",
     complejo_id: COMPLEJO_PILOTO_ID,
-    nombre: "Cabaña Cerro Morado",
-    tipo: "Familiar con Asador",
-    capacidad_maxima: 6,
-    estado_limpieza: "a_limpiar",
+    nombre: "Cabaña Doble 2",
+    tipo: "Doble Matrimonial / Twin",
+    capacidad_maxima: 2,
+    estado_limpieza: "limpia",
     orden_en_grilla: 2,
     activo: true,
   },
   {
     id: "c0000000-0000-0000-0000-000000000003",
     complejo_id: COMPLEJO_PILOTO_ID,
-    nombre: "Cabaña Siete Colores",
-    tipo: "Matrimonial Deluxe",
-    capacidad_maxima: 2,
-    estado_limpieza: "en_limpieza",
+    nombre: "Cabaña Cuádruple 3 c/ Terraza",
+    tipo: "Cuádruple con Terraza",
+    capacidad_maxima: 4,
+    estado_limpieza: "limpia",
     orden_en_grilla: 3,
     activo: true,
   },
   {
     id: "c0000000-0000-0000-0000-000000000004",
     complejo_id: COMPLEJO_PILOTO_ID,
-    nombre: "Cabaña Algarrobo",
-    tipo: "Estándar 2 Ambientes",
-    capacidad_maxima: 4,
+    nombre: "Cabaña Doble 4 c/ Terraza",
+    tipo: "Doble con Terraza",
+    capacidad_maxima: 2,
     estado_limpieza: "limpia",
     orden_en_grilla: 4,
     activo: true,
@@ -76,20 +76,20 @@ const MOCK_CABANIAS: Cabania[] = [
   {
     id: "c0000000-0000-0000-0000-000000000005",
     complejo_id: COMPLEJO_PILOTO_ID,
-    nombre: "Cabaña El Molino",
-    tipo: "Monoambiente Rústico",
-    capacidad_maxima: 2,
-    estado_limpieza: "a_limpiar",
+    nombre: "Cabaña Cuádruple 5",
+    tipo: "Cuádruple Familiar",
+    capacidad_maxima: 4,
+    estado_limpieza: "limpia",
     orden_en_grilla: 5,
     activo: true,
   },
   {
     id: "c0000000-0000-0000-0000-000000000006",
     complejo_id: COMPLEJO_PILOTO_ID,
-    nombre: "Cabaña Pucará",
-    tipo: "Familiar Superior",
-    capacidad_maxima: 5,
-    estado_limpieza: "mantenimiento",
+    nombre: "Cabaña Cuádruple 6",
+    tipo: "Cuádruple Familiar",
+    capacidad_maxima: 4,
+    estado_limpieza: "limpia",
     orden_en_grilla: 6,
     activo: true,
   },
@@ -98,7 +98,7 @@ const MOCK_CABANIAS: Cabania[] = [
 type FiltroLimpieza = "todas" | "a_limpiar" | "en_limpieza" | "limpias" | "mantenimiento";
 
 export default function LimpiezaPage() {
-  const [cabanias, setCabanias] = useState<Cabania[]>(MOCK_CABANIAS);
+  const [cabanias, setCabanias] = useState<Cabania[]>(REAL_CABANIAS_FALLBACK);
   const [reservasHoy, setReservasHoy] = useState<Reserva[]>([]);
   const [novedades, setNovedades] = useState<TareaLimpieza[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,7 +119,7 @@ export default function LimpiezaPage() {
       const supabase = createClient();
       const todayStr = format(new Date(), "yyyy-MM-dd");
 
-      // 1. Cabañas
+      // 1. Cabañas reales
       const { data: cabData } = await supabase
         .from("cabanias")
         .select("*")
@@ -129,7 +129,7 @@ export default function LimpiezaPage() {
       if (cabData && cabData.length > 0) {
         setCabanias(cabData);
       } else {
-        setCabanias(MOCK_CABANIAS);
+        setCabanias(REAL_CABANIAS_FALLBACK);
       }
 
       // 2. Reservas de hoy
@@ -141,9 +141,11 @@ export default function LimpiezaPage() {
 
       if (resData) {
         setReservasHoy(resData as unknown as Reserva[]);
+      } else {
+        setReservasHoy([]);
       }
 
-      // 3. Novedades / Tareas de limpieza
+      // 3. Novedades / Tareas de limpieza reales
       const { data: novData } = await supabase
         .from("tareas_limpieza")
         .select("*, cabania:cabanias(*)")
@@ -153,10 +155,12 @@ export default function LimpiezaPage() {
 
       if (novData) {
         setNovedades(novData);
+      } else {
+        setNovedades([]);
       }
     } catch (err) {
       console.error("Error al cargar datos de limpieza:", err);
-      setCabanias(MOCK_CABANIAS);
+      setCabanias(REAL_CABANIAS_FALLBACK);
     } finally {
       setLoading(false);
     }
